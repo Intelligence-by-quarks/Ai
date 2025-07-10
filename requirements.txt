@@ -1,0 +1,8 @@
+Flask==2.3.3
+soundfile==0.12.1
+sounddevice==0.4.6
+langchain==0.1.14
+llama-cpp-python==0.2.24
+kokoro
+numpy>=1.24
+tqdm>=4.66
