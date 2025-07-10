@@ -1,7 +1,7 @@
 
 # 💬 Eva
 
-Eva is a personalized AI chatbot designed to behave as you want with the given system prompt. Powered by a local LLM (e.g. Nyanade Stunna Maid 7B via LlamaCpp) and enhanced with natural speech synthesis via [Kokoro's `KPipeline`](https://github.com/kokoro-ai/kpipeline), Eva remembers conversations, speaks her replies, and interacts in a warm, affectionate, and human-like way.
+Eva is a personalized AI chatbot designed to behave as you want with the given system prompt. Powered by a local LLM (e.g. Nyanade Stunna Maid 7B via LlamaCpp) and enhanced with natural speech synthesis via Kokoro's KPipeline, Eva remembers conversations, speaks her replies, and interacts in a warm, affectionate, and human-like way.
 
 This app features a modern **glassmorphic UI**, **secure login**, **voice response generation**, and **session-based memory** — running entirely locally.
 
