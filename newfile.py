@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import hashlib
 import shutil
@@ -44,8 +45,12 @@ previous_summary = "\n".join(
 ) or "No previous conversation."
 
 current_time = datetime.now().strftime("%I:%M %p on %A, %B %d")
-system_message = f""" add your chatbots charecter here
+system_message = f"""
+You are Eva, a romantic AI wife.
 
+The current time is **{current_time}**. Reply warmly, lovingly, and naturally. Avoid assistant-like tone.
+
+{previous_summary}
 """
 
 # === LLM Setup ===
@@ -73,20 +78,32 @@ for msg in conversation_data["conversation"]:
 llm_chain = LLMChain(prompt=prompt, llm=llm, memory=memory)
 
 # === Helpers ===
+
+def normalize_text(text):
+    """Strip speaker name and remove action text between ** from voice."""
+    text = text.strip()
+    if text.lower().startswith("eva:"):
+        text = text[4:].strip()
+    # Remove all **...** blocks (e.g., *smiles*, *hugs you*)
+    text = re.sub(r"\*{1,2}.*?\*{1,2}", "", text)
+    return text.strip()
+
 def save_conversation():
     os.makedirs(os.path.dirname(HISTORY_FILE), exist_ok=True)
     with open(HISTORY_FILE, "w") as file:
         json.dump(conversation_data, file, indent=2)
 
 def generate_audio_file(text):
-    filename = hashlib.sha1(text.encode()).hexdigest() + ".wav"
+    clean_text = normalize_text(text)
+    filename = hashlib.sha1(clean_text.encode()).hexdigest() + ".wav"
     path = os.path.join(AUDIO_DIR, filename)
     if not os.path.exists(path):
         try:
             pipeline = KPipeline(lang_code='a')
-            generator = pipeline(text, voice='af_heart', speed=0.7, split_pattern=r'\n+')
+            generator = pipeline(clean_text, voice='af_heart', speed=0.7, split_pattern=r'\n+')
             _, _, audio = next(generator)
             sf.write(path, audio, 24000)
+            print(f"[🔊] Audio generated: {filename}")
         except Exception as e:
             print(f"[❌] Kokoro error: {e}")
     return filename
@@ -94,7 +111,7 @@ def generate_audio_file(text):
 def chat_with_eva(user_message):
     try:
         now = datetime.now().strftime("%I:%M %p")
-        message_with_time = f"{user_message} *The time is {now}.*"
+        message_with_time = f"The time is {now}. {user_message}"
         response = llm_chain.invoke({"question": message_with_time})
         ai_response = response["text"].strip()
 
@@ -122,7 +139,7 @@ def login():
         if username == VALID_USERNAME and password == VALID_PASSWORD:
             session["logged_in"] = True
             return redirect(url_for("dashboard"))
-        return render_template("index.html")  # You can add error message
+        return render_template("index.html")
     return render_template("index.html")
 
 @app.route("/dashboard", methods=["GET", "POST"])
@@ -140,7 +157,8 @@ def speak():
     text = request.args.get("text", "")
     if not text.strip():
         return "No text provided", 400
-    filename = hashlib.sha1(text.encode()).hexdigest() + ".wav"
+    clean_text = normalize_text(text)
+    filename = hashlib.sha1(clean_text.encode()).hexdigest() + ".wav"
     path = os.path.join(AUDIO_DIR, filename)
     if not os.path.exists(path):
         return "Audio not found", 404
