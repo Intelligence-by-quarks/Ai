@@ -133,13 +133,8 @@ You can clear memory manually by deleting that file.
 
 ## 📃 License
 
-This is a personal project. Use, modify, and expand it as you like.pls give me the screen shots or ideas if you do so at duttaasmit3@gmail.com
-For commercial use or redistribution, please credit the original model creators and Kokoro.
+This is a personal project. Use, modify, and expand it as you like.Pls give me the screen shots or ideas if you do so at duttaasmit3@gmail.com
+For commercial use or redistribution, please credit the original gguf model creators and Kokoro.
 
 ---
 
-Let me know if you'd like me to:
-
-* Generate a sample `requirements.txt`
-* Package this into a `.zip`
-* Help you deploy it with `ngrok` or `localtunnel` for sharing online!
