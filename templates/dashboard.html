@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eva Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-bg">
+  <div class="chat-container">
+    <div id="chatWindow" class="chat-window"></div>
+    <div class="chat-input-container">
+      <textarea id="userInput" class="chat-input" placeholder="Type a message...(Shift+Enter for new line)" onkeydown="handleKeyDown(event)" oninput="autoResizeTextarea()"></textarea>
+      <button class="send-button" onclick="sendMessage()">
+        <img src="{{ url_for('static', filename='send.png') }}" alt="Send">
+      </button>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      const conversation = {{ conversation | tojson }};
+      const chatWindow = document.getElementById('chatWindow');
+      conversation.forEach((msg) => {
+        const messageBubble = document.createElement('div');
+        messageBubble.className = `chat-bubble ${msg.role === 'User' ? 'user-message' : 'bot-message'}`;
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const encoded = encodeURIComponent(msg.content);
+
+        messageBubble.innerHTML = `
+          <span>${msg.content}</span>
+          <div class="timestamp">${timestamp}</div>
+          ${msg.role !== 'User' ? `<button class="play-button" onclick="playVoice('${encoded}')">🔊</button>` : ''}
+        `;
+
+        chatWindow.appendChild(messageBubble);
+      });
+      document.getElementById('userInput').focus();
+    };
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+      input.value = '';
+      input.style.height = "60px";
+      input.disabled = true;
+      addMessage(userMessage, 'user-message');
+      const typingBubble = showTyping();
+      try {
+        const response = await fetch('/dashboard', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMessage })
+        });
+        const data = await response.json();
+        removeTypingIndicator(typingBubble);
+        addMessage(data.response.trim(), 'bot-message');
+      } catch (error) {
+        removeTypingIndicator(typingBubble);
+        addMessage("⚠️ Server error. Try again.", 'bot-message');
+      } finally {
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    function addMessage(message, className) {
+      const chatWindow = document.getElementById('chatWindow');
+      const messageBubble = document.createElement('div');
+      messageBubble.className = `chat-bubble ${className}`;
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const encoded = encodeURIComponent(message);
+      messageBubble.innerHTML = `
+        <span>${message}</span>
+        <div class="timestamp">${timestamp}</div>
+        ${className === 'bot-message' ? `<button class="play-button" onclick="playVoice('${encoded}')">🔊</button>` : ''}
+      `;
+      chatWindow.appendChild(messageBubble);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function showTyping() {
+      const chatWindow = document.getElementById('chatWindow');
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble bot-message typing-indicator';
+      bubble.innerHTML = `<span class="dot-flashing"></span>`;
+      chatWindow.appendChild(bubble);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      return bubble;
+    }
+
+    function removeTypingIndicator(bubble) {
+      if (bubble && bubble.parentNode) {
+        bubble.parentNode.removeChild(bubble);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function autoResizeTextarea() {
+      const input = document.getElementById('userInput');
+      input.style.height = 'auto';
+      input.style.height = input.scrollHeight + "px";
+    }
+
+    async function playVoice(messageText) {
+      const response = await fetch(`/speak?text=${messageText}`);
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.play();
+      } else {
+        alert("🎤 Failed to generate voice.");
+      }
+    }
+  </script>
+</body>
+</html>
