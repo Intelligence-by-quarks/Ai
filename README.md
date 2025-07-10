@@ -1,15 +1,18 @@
-Here's a complete, descriptive `README.md` for your Eva AI chatbot web app:
 
----
-
-# 💬 Eva - Romantic AI Wife Chatbot
+# 💬 Eva
 
 Eva is a personalized AI chatbot designed to behave as you want with the given system prompt. Powered by a local LLM (e.g. Nyanade Stunna Maid 7B via LlamaCpp) and enhanced with natural speech synthesis via [Kokoro's `KPipeline`](https://github.com/kokoro-ai/kpipeline), Eva remembers conversations, speaks her replies, and interacts in a warm, affectionate, and human-like way.
 
 This app features a modern **glassmorphic UI**, **secure login**, **voice response generation**, and **session-based memory** — running entirely locally.
 
 ---
+## 📸 Screenshots
 
+### 🔐 Login Screen
+![Login](screenshots/login.PNG)
+
+### 💬 Chat Interface
+![Chat](screenshots/chat.PNG)
 ## 🌟 Features
 
 * 🧠 **LLM-Powered Chat**: Uses a locally running LLM (LlamaCpp + LangChain) to generate romantic, supportive, and emotionally deep responses.
